@@ -1,0 +1,30 @@
+<project name="sr4pe" default="main" basedir=".">
+	<property name="build.dir" value="build" />
+	<property name="jar.dir" value="${build.dir}/jar" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="main-class" value="gamers.associate.sr4pe.SR4PE" />
+	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar" />
+
+	<target name="clean">
+		<delete dir="build" />	
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${classes.dir}" />
+		<javac srcdir="src" destdir="${classes.dir}" />
+	</target>
+	
+	<target name="jar">
+		<jar destfile="${jar.file}" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="run">
+		<java jar="${jar.file}" fork="true" /> 
+	</target>
+
+	<target name="main" depends="clean, compile, jar" />
+</project>
