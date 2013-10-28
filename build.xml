@@ -4,6 +4,11 @@
 	<property name="classes.dir" value="${build.dir}/classes" />
 	<property name="main-class" value="gamers.associate.sr4pe.SR4PE" />
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar" />
+	<property name="lib.dir" value="lib" />
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
 
 	<target name="clean">
 		<delete dir="build" />	
@@ -11,7 +16,9 @@
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
-		<javac srcdir="src" destdir="${classes.dir}" includeantruntime="false" />
+		<javac srcdir="src" destdir="${classes.dir}" includeantruntime="false" classpathref="classpath" debug="true">
+			<compilerarg value="-Xlint" />
+		</javac>
 	</target>
 	
 	<target name="jar">
@@ -23,7 +30,12 @@
 	</target>
 
 	<target name="run">
-		<java jar="${jar.file}" fork="true" /> 
+		<java classname="${main-class}" fork="true"> 
+			<classpath>
+				<path refid="classpath" />
+				<path location="${jar.file}" />
+			</classpath>
+		</java>
 	</target>
 
 	<target name="main" depends="clean, compile, jar" />
