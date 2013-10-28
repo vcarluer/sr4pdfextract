@@ -6,6 +6,9 @@
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar" />
 	<property name="lib.dir" value="lib" />
 	<property name="arg0" value="" />
+	<property name="arg1" value="" />
+	<property name="arg2" value="" />
+	<property name="arg3" value="" />
 
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar" />
@@ -37,6 +40,9 @@
 				<path location="${jar.file}" />
 			</classpath>
 			<arg value="${arg0}" />
+			<arg value="${arg1}" />
+			<arg value="${arg2}" />
+			<arg value="${arg3}" />
 		</java>
 	</target>
 
