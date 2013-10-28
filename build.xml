@@ -5,6 +5,7 @@
 	<property name="main-class" value="gamers.associate.sr4pe.SR4PE" />
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar" />
 	<property name="lib.dir" value="lib" />
+	<property name="arg0" value="" />
 
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar" />
@@ -35,6 +36,7 @@
 				<path refid="classpath" />
 				<path location="${jar.file}" />
 			</classpath>
+			<arg value="${arg0}" />
 		</java>
 	</target>
 

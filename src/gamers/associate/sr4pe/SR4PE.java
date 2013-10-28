@@ -13,14 +13,22 @@ import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 import org.apache.pdfbox.io.RandomAccessBuffer;
 
 public class SR4PE {
-	private static String pdfTest = "c:/java/projects/Sr4PdfExtract/pdf/test.pdf";
-	private static String outPath = "c:/java/projects/Sr4PdfExtract/pdf/out.txt";
-
 	public static void main(String[] args) {
 		System.out.println("SR4 pdf extractor");	
-		File pdfFile = new File(pdfTest);
-		File outFile = new File(outPath);
+		if (args.length < 1) {
+			System.out.println("usage: SR4PE [pdfName]");
+			System.out.println("pdfName=PDF file name without extension in pdf folder");
+			return;
+		}
+
+		String pdfInPath = "./pdf/" + args[0] + ".unencrypted.pdf";
+		String outPath = "./out/" + args[0] + ".txt";
 		try {
+			Process p = Runtime.getRuntime().exec("cmd /C tools\\gs.cmd " + args[0]);
+			p.waitFor();
+
+			File pdfFile = new File(pdfInPath);			
+			File outFile = new File(outPath);
 			InputStream stream = new BufferedInputStream(new FileInputStream(pdfFile));
 			PDFParser parser = new PDFParser(stream, new RandomAccessBuffer(), true);
 			parser.parse();
