@@ -98,22 +98,38 @@ public class SR4PE {
 			OutputStreamWriter out = null;
 			boolean handleParagraph = false;
 			boolean breakParagraph = false;
+			boolean nextLineIsTitle = false;
+			boolean isTitle = false;
+			boolean tableLine = false;
 			while (line != null) { 
+				isTitle = false;
+				tableLine = false;
 				boolean isUpper = true;
+				boolean hasLetters = false;
 				char[] lineChars = line.toCharArray();
+
 				for (char c : lineChars) {
-					if (Character.isLetter(c) && !Character.isUpperCase(c)) {
+					if (Character.isLetter(c)) {
+						hasLetters = true;
+					}
+
+					if ((Character.isLetter(c) && !Character.isUpperCase(c)) || c == '/') {
 						isUpper = false;
 						break;
 					}
 				}	
+				
+				if (!hasLetters || line.contains("\t")) {
+					isUpper = false;
+					tableLine = true;
+				}
 		
 				if (isUpper) {
 					handleParagraph = true;
 					breakParagraph = true;
 					
 					if (
-						line.contains("KIT D'ATTRIBUTS") ||
+						line.contains("KITS") ||
 						line.contains("TOUCHE FINALE") ||
 						line.contains("PACKS") ||
 						line.contains("SR4A")						
@@ -122,13 +138,20 @@ public class SR4PE {
 					}
 
 					if (
-						lineChars[0] == ' ' ||
-						lineChars[0] == '[' ||
+						line == "" ||
+						line.contains("[") ||
+						line.contains("]") ||
 						lineChars[0] == '(' ||
 						lineChars[0] == '.'
 							) {
 						breakParagraph = false;
 					}
+
+					if (nextLineIsTitle) {
+						breakParagraph = false;
+						nextLineIsTitle = false;
+						isTitle = true;
+					}	
 
 					if (handleParagraph && breakParagraph) {						
 						// this is a new paragraph					
@@ -137,16 +160,48 @@ public class SR4PE {
 
 						}
 
-						upperCount++;
-						sout(line);
+						if (line.contains("(") && !line.contains(")")) {
+							nextLineIsTitle = true;
+							isTitle = false;
+						} else {
+							nextLineIsTitle = false;
+						}
 
-						fos = new FileOutputStream("extract\\" + line.replaceAll("[\\s+, *]", "") + ".txt");
-						out = new OutputStreamWriter(fos, "UTF-8");
+
+						upperCount++;
+						
+						String fileName = getFileName(line);
+						if (fileName != "") {
+							sout(fileName);
+							fos = new FileOutputStream("extract\\" + fileName + ".txt");
+							out = new OutputStreamWriter(fos, "UTF-8");
+							isTitle = true;
+						} else {
+							handleParagraph = false;
+							sout("Cannot find a correct file name for line " + line);
+						}
 					}
 				}
 				
-				if (handleParagraph) {
-					out.write(line + "\n");
+				if (handleParagraph && out != null) {
+					String toWrite = getToWrite(line, isTitle || nextLineIsTitle);
+					if (toWrite != "") {
+						if (line.contains(":") || tableLine) {
+							out.write("\n" + toWrite + "\n");
+						} else {
+							if (isTitle) {
+								out.write(toWrite + "\n\n");
+							} else {
+								if (lineChars[lineChars.length-1] == ']' || lineChars[lineChars.length-1] == '.') {
+									out.write(toWrite + "\n");
+								} else {
+									out.write(toWrite);
+								}
+							}
+						}
+					} else {
+						out.write("\n");
+					}
 				}
 
 				line = reader.readLine();
@@ -177,5 +232,33 @@ public class SR4PE {
 			System.out.println(ex.getMessage());
 		}
 	}	
+
+	private static String getFileName(String line) {
+		String fileNameTmp = line.replaceAll("[\\s+, *]", "");
+		String fileName = "";
+		char[] chars = fileNameTmp.toCharArray();
+		for(char c : chars) {
+			if (c == '(' || c == '[') break;
+			fileName += c;
+		}
+		
+		return fileName;
+	}
+
+	private static String getToWrite(String line, boolean isTitle) {
+		String toWrite = "";
+
+		if (!isTitle && (line.contains("["))) {
+			char[] lineChars = line.toCharArray();
+			for (char c : lineChars) {
+				if (c == '[') break;
+				toWrite += c;
+			}
+		} else {
+			toWrite = line;
+		}
+
+		return toWrite;
+	}
 }
 
