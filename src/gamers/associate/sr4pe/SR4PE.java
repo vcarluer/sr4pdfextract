@@ -18,6 +18,10 @@ import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 import org.apache.pdfbox.io.RandomAccessBuffer;
 
 public class SR4PE {
+	private static OutputStreamWriter psout;
+	private static String compConn = "Suggestions de Compétences de connaissances";
+	private static String compAct = "Compétences actives";
+
 	public static void main(String[] args) {
 		System.out.println("SR4 pdf extractor");	
 		if (args.length < 4) {
@@ -101,6 +105,8 @@ public class SR4PE {
 			boolean nextLineIsTitle = false;
 			boolean isTitle = false;
 			boolean tableLine = false;
+			boolean compConnPass = false;
+			boolean compActPass = false;
 			while (line != null) { 
 				isTitle = false;
 				tableLine = false;
@@ -119,7 +125,7 @@ public class SR4PE {
 					}
 				}	
 				
-				if (!hasLetters || line.contains("\t")) {
+				if (!nextLineIsTitle && (!hasLetters || line.contains("\t"))) {
 					isUpper = false;
 					tableLine = true;
 				}
@@ -159,8 +165,11 @@ public class SR4PE {
 							out.close();
 
 						}
-
-						if (line.contains("(") && !line.contains(")")) {
+						
+						compConnPass = false;
+						compActPass = false;
+						
+						if (!line.contains(")")) {
 							nextLineIsTitle = true;
 							isTitle = false;
 						} else {
@@ -181,6 +190,14 @@ public class SR4PE {
 							sout("Cannot find a correct file name for line " + line);
 						}
 					}
+				} else {
+					if (line.contains(compConn)) {
+						compConnPass = true;
+					}
+
+					if (line.contains(compAct)) {
+						compActPass = true;
+					}
 				}
 				
 				if (handleParagraph && out != null) {
@@ -192,7 +209,8 @@ public class SR4PE {
 							if (isTitle) {
 								out.write(toWrite + "\n\n");
 							} else {
-								if (lineChars[lineChars.length-1] == ']' || lineChars[lineChars.length-1] == '.') {
+								char lastChar = lineChars[lineChars.length-1];
+								if (lastChar == ']' || lastChar == '.' || lastChar == ')') {
 									out.write(toWrite + "\n");
 								} else {
 									out.write(toWrite);
@@ -218,7 +236,6 @@ public class SR4PE {
 		}
 	}
 	
-	private static OutputStreamWriter psout;
 	private static void sout(String line) {
 		char[] lineChars = line.toCharArray();
 		try {
@@ -255,7 +272,11 @@ public class SR4PE {
 				toWrite += c;
 			}
 		} else {
-			toWrite = line;
+			if (line.contains(compConn)) {
+				toWrite = "Compétences de connaissances :";
+			} else {
+				toWrite = line;
+			}
 		}
 
 		return toWrite;
