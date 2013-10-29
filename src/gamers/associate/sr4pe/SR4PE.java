@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.BufferedInputStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -25,6 +26,12 @@ public class SR4PE {
 			return;
 		}
 		
+		try {
+			psout = new OutputStreamWriter(System.out, "windows-1252");
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+
 		String file = args[0];
 		int start = Integer.parseInt(args[1]);
 		int end = Integer.parseInt(args[2]);
@@ -72,9 +79,10 @@ public class SR4PE {
 			splitText(outPath);
 		} catch (IOException ex) {
 			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
-			System.out.println(ex.getStackTrace());
+			ex.printStackTrace();
 		}
 	}
 	
@@ -88,9 +96,12 @@ public class SR4PE {
 
 			FileOutputStream fos = null;
 			OutputStreamWriter out = null;
+			boolean handleParagraph = false;
+			boolean breakParagraph = false;
 			while (line != null) { 
 				boolean isUpper = true;
-				for (char c : line.toCharArray()) {
+				char[] lineChars = line.toCharArray();
+				for (char c : lineChars) {
 					if (Character.isLetter(c) && !Character.isUpperCase(c)) {
 						isUpper = false;
 						break;
@@ -98,19 +109,45 @@ public class SR4PE {
 				}	
 		
 				if (isUpper) {
-					// this is a new paragraph
-					upperCount++;
-					System.out.println(line);
-					if (out != null) {
-						out.close();
-
+					handleParagraph = true;
+					breakParagraph = true;
+					
+					if (
+						line.contains("KIT D'ATTRIBUTS") ||
+						line.contains("TOUCHE FINALE") ||
+						line.contains("PACKS") ||
+						line.contains("SR4A")						
+							) {
+						handleParagraph = false;
 					}
 
-					fos = new FileOutputStream("temp\\" + line.replaceAll("[\\s+, *]", "") + ".txt");
-					out = new OutputStreamWriter(fos, "UTF-8");
-				}
+					if (
+						lineChars[0] == ' ' ||
+						lineChars[0] == '[' ||
+						lineChars[0] == '(' ||
+						lineChars[0] == '.'
+							) {
+						breakParagraph = false;
+					}
 
-				out.write(line + "\n");
+					if (handleParagraph && breakParagraph) {						
+						// this is a new paragraph					
+						if (out != null) {
+							out.close();
+
+						}
+
+						upperCount++;
+						sout(line);
+
+						fos = new FileOutputStream("extract\\" + line.replaceAll("[\\s+, *]", "") + ".txt");
+						out = new OutputStreamWriter(fos, "UTF-8");
+					}
+				}
+				
+				if (handleParagraph) {
+					out.write(line + "\n");
+				}
 
 				line = reader.readLine();
 			}
@@ -122,7 +159,23 @@ public class SR4PE {
 			System.out.println(String.valueOf(upperCount));
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
+	
+	private static OutputStreamWriter psout;
+	private static void sout(String line) {
+		char[] lineChars = line.toCharArray();
+		try {
+			for (char c : lineChars) {
+				psout.write(c);
+				psout.flush();
+			}
+	
+			psout.write('\n');
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+	}	
 }
 
