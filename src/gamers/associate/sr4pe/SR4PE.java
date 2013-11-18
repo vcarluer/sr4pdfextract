@@ -63,12 +63,16 @@ public class SR4PE {
 			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(outPath), "UTF-8");
 
 			PDFTextStripper textStripper = new PDFTextStripper();
-			textStripper.setStartPage(start);
-			textStripper.setEndPage(end);
-			textStripper.writeText(doc, writer);
-			writer.flush();
+			for (int i = start; i <= end; i++) {
+
+				textStripper.setStartPage(i);
+				textStripper.setEndPage(i);
+				textStripper.writeText(doc, writer);
+				writer.flush();
+			}
+
 			writer.close();
-			
+
 			/*FileWriter writerHtml = new FileWriter(outFileHtml);		
 			PDFText2HTML html = new PDFText2HTML("utf8");
 			html.setStartPage(1);
@@ -210,7 +214,12 @@ public class SR4PE {
 								out.write(toWrite + "\n\n");
 							} else {
 								char lastChar = lineChars[lineChars.length-1];
-								if (lastChar == ']' || lastChar == '.' || lastChar == ')') {
+								if (
+									lastChar == ']' || 
+									lastChar == '.' || 
+									lastChar == ')' ||
+									Character.isDigit(lastChar)
+									) {
 									out.write(toWrite + "\n");
 								} else {
 									out.write(toWrite);
