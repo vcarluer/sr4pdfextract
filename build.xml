@@ -20,7 +20,7 @@
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
-		<javac srcdir="src" destdir="${classes.dir}" includeantruntime="false" classpathref="classpath" debug="true">
+		<javac srcdir="src" destdir="${classes.dir}" includeantruntime="false" classpathref="classpath" debug="true" encoding="utf-8">
 			<compilerarg value="-Xlint" />
 		</javac>
 	</target>

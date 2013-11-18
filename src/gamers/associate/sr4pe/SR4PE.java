@@ -19,8 +19,9 @@ import org.apache.pdfbox.io.RandomAccessBuffer;
 
 public class SR4PE {
 	private static OutputStreamWriter psout;
-	private static String compConn = "Suggestions de Compétences de connaissances";
-	private static String compAct = "Compétences actives";
+	private static String compConn = "Suggestions de CompÃ©tences de connaissances";
+	private static String compAct = "CompÃ©tences actives";
+	private static String ignoreName = "Vincent CARLUER";
 
 	public static void main(String[] args) {
 		System.out.println("SR4 pdf extractor");	
@@ -112,6 +113,7 @@ public class SR4PE {
 			boolean compConnPass = false;
 			boolean compActPass = false;
 			while (line != null) { 
+				boolean ignoreLine = false;
 				isTitle = false;
 				tableLine = false;
 				boolean isUpper = true;
@@ -135,63 +137,63 @@ public class SR4PE {
 				}
 		
 				if (isUpper) {
-					handleParagraph = true;
-					breakParagraph = true;
-					
 					if (
 						line.contains("KITS") ||
 						line.contains("TOUCHE FINALE") ||
 						line.contains("PACKS") ||
 						line.contains("SR4A")						
 							) {
-						handleParagraph = false;
-					}
+						ignoreLine = true;
+					} else {					
+						handleParagraph = true;
+						breakParagraph = true;
 
-					if (
-						line == "" ||
-						line.contains("[") ||
-						line.contains("]") ||
-						lineChars[0] == '(' ||
-						lineChars[0] == '.'
-							) {
-						breakParagraph = false;
-					}
-
-					if (nextLineIsTitle) {
-						breakParagraph = false;
-						nextLineIsTitle = false;
-						isTitle = true;
-					}	
-
-					if (handleParagraph && breakParagraph) {						
-						// this is a new paragraph					
-						if (out != null) {
-							out.close();
-
+						if (
+							line == "" ||
+							line.contains("[") ||
+							line.contains("]") ||
+							lineChars[0] == '(' ||
+							lineChars[0] == '.'
+								) {
+							breakParagraph = false;
 						}
-						
-						compConnPass = false;
-						compActPass = false;
-						
-						if (!line.contains(")")) {
-							nextLineIsTitle = true;
-							isTitle = false;
-						} else {
+
+						if (nextLineIsTitle) {
+							breakParagraph = false;
 							nextLineIsTitle = false;
-						}
-
-
-						upperCount++;
-						
-						String fileName = getFileName(line);
-						if (fileName != "") {
-							sout(fileName);
-							fos = new FileOutputStream("extract\\" + fileName + ".txt");
-							out = new OutputStreamWriter(fos, "UTF-8");
 							isTitle = true;
-						} else {
-							handleParagraph = false;
-							sout("Cannot find a correct file name for line " + line);
+						}	
+
+						if (handleParagraph && breakParagraph) {						
+							// this is a new paragraph					
+							if (out != null) {
+								out.close();
+
+							}
+							
+							compConnPass = false;
+							compActPass = false;
+							
+							if (!line.contains(")")) {
+								nextLineIsTitle = true;
+								isTitle = false;
+							} else {
+								nextLineIsTitle = false;
+							}
+
+
+							upperCount++;
+							
+							String fileName = getFileName(line);
+							if (fileName != "") {
+								sout(fileName);
+								fos = new FileOutputStream("extract\\" + fileName + ".txt");
+								out = new OutputStreamWriter(fos, "UTF-8");
+								isTitle = true;
+							} else {
+								handleParagraph = false;
+								sout("Cannot find a correct file name for line " + line);
+							}
 						}
 					}
 				} else {
@@ -202,13 +204,17 @@ public class SR4PE {
 					if (line.contains(compAct)) {
 						compActPass = true;
 					}
+
+					if (line.contains(ignoreName)) {
+						ignoreLine = true;
+					}
 				}
 				
-				if (handleParagraph && out != null) {
+				if (handleParagraph && out != null && !ignoreLine) {
 					String toWrite = getToWrite(line, isTitle || nextLineIsTitle);
 					if (toWrite != "") {
 						if (line.contains(":") || tableLine) {
-							out.write("\n" + toWrite + "\n");
+							out.write(toWrite + "\n");
 						} else {
 							if (isTitle) {
 								out.write(toWrite + "\n\n");
@@ -218,7 +224,8 @@ public class SR4PE {
 									lastChar == ']' || 
 									lastChar == '.' || 
 									lastChar == ')' ||
-									Character.isDigit(lastChar)
+									Character.isDigit(lastChar) ||
+									lastChar == 'Â¥'
 									) {
 									out.write(toWrite + "\n");
 								} else {
@@ -282,7 +289,7 @@ public class SR4PE {
 			}
 		} else {
 			if (line.contains(compConn)) {
-				toWrite = "Compétences de connaissances :";
+				toWrite = "CompÃ©tences de connaissances :";
 			} else {
 				toWrite = line;
 			}
