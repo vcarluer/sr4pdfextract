@@ -5,7 +5,7 @@ import os
 import sys
 from gimpfu import *
 
-def python_createcard2(timg, tdrawable, templateXcf="C:\\java\\projects\\Sr4PdfExtract\\gimp\\backcard.xcf", dirIn="C:\\java\projects\\Sr4PdfExtract\\extract", dirOut="C:\\java\projects\\Sr4PdfExtract\\images", countMax = 999):
+def python_createcard2(templateXcf="C:\\java\\projects\\Sr4PdfExtract\\gimp\\backcard.xcf", dirIn="C:\\java\\projects\\Sr4PdfExtract\\extract", dirOut="C:\\java\\projects\\Sr4PdfExtract\\images", countMax = 999):
 	
 	# Open text file and get texts
 	count = 0
@@ -13,7 +13,7 @@ def python_createcard2(timg, tdrawable, templateXcf="C:\\java\\projects\\Sr4PdfE
 		f = open(os.path.join(dirIn, files))
 		data = f.read()
 		f.close()
-		fileMain = files[:files.find(".")-1]
+		fileMain = files[:files.find(".")]
 		fileMain = fileMain.decode("windows-1252")
 		createImages(templateXcf, data, dirOut, fileMain)
 		count += 1
@@ -76,12 +76,12 @@ register(
 	"Vincent Carluer",
 	"Vincent Carluer",
         "2013",
-        "<Image>/File/_CreateCard2...",
+        "<Toolbox>/MyScripts/_CreateCard2...",
         "",
         [
 		(PF_STRING, "templateXcf", "templateXcf", "C:\\java\\projects\\Sr4PdfExtract\\gimp\\backcard.xcf"),
-		(PF_STRING, "dirIn", "dirIn", "C:\\java\projects\\Sr4PdfExtract\\extract"),
-		(PF_STRING, "dirOut", "dirOut", "C:\\java\projects\\Sr4PdfExtract\\images"),
+		(PF_STRING, "dirIn", "dirIn", "C:\\java\\projects\\Sr4PdfExtract\\extract"),
+		(PF_STRING, "dirOut", "dirOut", "C:\\java\\projects\\Sr4PdfExtract\\images"),
 		(PF_INT, "countMax", "countMax", 999)
         ],
         [],
